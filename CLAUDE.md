@@ -47,26 +47,33 @@ Examples:
 
 ### Nixpkgs Pin
 - Revision: `ed142ab1b3a092c4d149245d0c4126a5d7ea00b0`
-- ONNX Runtime: 1.23.2 (CUTLASS 3.9.2 for Blackwell support)
+- ONNX Runtime base: 1.23.2, overridden to **1.22.2** via `version`/`src`/`patches`/`postPatch`/`cmakeFlags` override
+- CUTLASS: 3.5.1 (overridden via `FETCHCONTENT_SOURCE_DIR_CUTLASS`, GPU variants only)
+- ONNX: 1.17.0 (overridden via `FETCHCONTENT_SOURCE_DIR_ONNX`, all variants)
+- abseil-cpp: nixpkgs default 20240722 (no override needed — compatible with ORT 1.22.2)
 - CUDA: 12.9 via `cudaPackages_12_9` overlay — **requires NVIDIA driver 560+**
 - Python: 3.13
+
+### GCC 15 Compatibility
+ORT 1.22.2 requires a `postPatch` fix to add `#include <cstdint>` to `onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h` for GCC 15 compatibility. This is handled in each `.nix` file's `postPatch` block.
 
 ### Branch Strategy
 Branches track ORT versions. The CUDA toolkit version is a property of the branch, documented in README.md, CLAUDE.md, and each `.nix` file header comment.
 
-- **main**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (current stable)
-- Future branches: `ort-1.24`, `ort-1.22`, etc. for other ORT versions
+- **main**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (stable)
+- **ort-1.24**: ONNX Runtime 1.24.2 + CUDA 12.9, driver 560+ (current, Blackwell support)
+- **ort-1.22**: ONNX Runtime 1.22.2 + CUDA 12.9, driver 560+ (compat, no Blackwell)
 
 ### CUDA Version Documentation
 Each GPU `.nix` file includes a two-line header comment:
 ```nix
-# ONNX Runtime 1.23.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
+# ONNX Runtime 1.22.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
 # CUDA 12.9 — Requires NVIDIA driver 560+
 ```
 
 The `meta.description` also includes the CUDA version:
 ```nix
-description = "ONNX Runtime 1.23.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
+description = "ONNX Runtime 1.22.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
 ```
 
 ## Package Development Guidelines
@@ -88,10 +95,22 @@ When a new CUDA toolkit is needed (e.g., CUDA 13.0):
 6. Update README.md and CLAUDE.md with the new CUDA version and driver requirement
 
 ### Updating ONNX Runtime Version
+Two approaches depending on nixpkgs availability:
+
+**If nixpkgs has the target ORT version:**
 - Update the nixpkgs pin to a revision with the target ORT version
 - All variants share the same pin, so updating it updates all variants
 - Update the ORT version in header comments and `meta.description`
-- Test a representative GPU and CPU-only variant before committing
+
+**If nixpkgs does NOT have the target ORT version (overlay approach, used on this branch):**
+- Keep the existing nixpkgs pin for build infrastructure
+- Override `version`, `src`, `patches`, `postPatch`, and `cmakeFlags` in `overrideAttrs`
+- Fetch new source via `fetchFromGitHub` with `fetchSubmodules = true`
+- Override vendored deps (CUTLASS, ONNX) via `FETCHCONTENT_SOURCE_DIR_*` cmake flags
+- Clear `patches = []` since nixpkgs patches are version-specific
+- Provide compatible `postPatch` for the new source (including GCC compatibility fixes)
+
+In both cases, test a representative GPU and CPU-only variant before committing.
 
 ## Commit Message Conventions
 - Package updates: `<package>: update to latest`

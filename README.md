@@ -1,6 +1,6 @@
 # ONNX Runtime Custom Build Environment
 
-> **You are on the `main` branch** — ONNX Runtime 1.23.2 + CUDA 12.9 + Driver 560+ (36 variants)
+> **You are on the `ort-1.22` branch** — ONNX Runtime 1.22.2 + CUDA 12.9 + Driver 560+ (28 variants)
 
 This Flox environment builds custom ONNX Runtime variants with targeted optimizations for specific GPU architectures and CPU instruction sets.
 
@@ -10,9 +10,9 @@ Each branch tracks a specific ONNX Runtime version. The CUDA toolkit version and
 
 | Branch | ORT Version | CUDA | Min Driver | Status |
 |--------|-------------|------|------------|--------|
-| `main` | 1.23.2 | 12.9 | 560+ | Current stable |
-| `ort-1.24` | 1.24.x | TBD | TBD | Future |
-| `ort-1.22` | 1.22.x | TBD | TBD | Future (compat) |
+| `main` | 1.23.2 | 12.9 | 560+ | Stable |
+| `ort-1.24` | 1.24.2 | 12.9 | 560+ | Current |
+| `ort-1.22` | 1.22.2 | 12.9 | 560+ | Compat |
 
 To use a different ORT version, check out the corresponding branch. All variants on a branch share the same ORT version, CUDA toolkit, and nixpkgs pin.
 
@@ -43,15 +43,16 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 
 | Component | Version | Min Driver | Notes |
 |-----------|---------|------------|-------|
-| ONNX Runtime | 1.23.2 | — | From source via CMake |
-| CUTLASS | 3.9.2 | — | Bundled, Blackwell support |
+| ONNX Runtime | 1.22.2 | — | From source via CMake (version override on nixpkgs 1.23.2 base) |
+| CUTLASS | 3.5.1 | — | Bundled (GPU only), no Blackwell support |
+| ONNX | 1.17.0 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_ONNX` |
 | CUDA Toolkit | 12.9 | 560+ | Via nixpkgs `cudaPackages_12_9` |
 | Python | 3.13 | — | Via nixpkgs |
 | Nixpkgs | [`ed142ab`](https://github.com/NixOS/nixpkgs/tree/ed142ab1b3a092c4d149245d0c4126a5d7ea00b0) | — | Pinned revision |
 
 ## Build Matrix
 
-### GPU Variants (7 architectures x 4 x86 ISAs + 2 SM90 ARM = 30)
+### GPU Variants (5 architectures x 4 x86 ISAs + 2 SM90 ARM = 22)
 
 | SM | Architecture | GPUs | x86 ISAs | ARM ISAs |
 |----|-------------|------|----------|----------|
@@ -60,8 +61,8 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 | SM86 | Ampere | RTX 3090, A40 | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | — |
 | SM89 | Ada | RTX 4090, L4, L40 | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | — |
 | SM90 | Hopper | H100, L40S, Grace Hopper | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | ARMv8.2, ARMv9 |
-| SM100 | Blackwell DC | B100, B200 | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | — |
-| SM120 | Blackwell | RTX 5090 | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | — |
+
+**Note:** Blackwell GPUs (SM100/SM120) require CUTLASS 4.x and are only available on `ort-1.24+`.
 
 ### CPU-only Variants (6)
 
@@ -74,7 +75,7 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 | ARMv8.2 | `-march=armv8.2-a+fp16+dotprod` | Graviton2 | aarch64-linux |
 | ARMv9 | `-march=armv9-a+sve2` | Graviton3+, Grace | aarch64-linux |
 
-### Total: 36 variants (30 GPU + 6 CPU-only)
+### Total: 28 variants (22 GPU + 6 CPU-only)
 
 ## Quick Start
 
@@ -98,8 +99,7 @@ flox build onnxruntime-python313-cuda12_9-sm90-avx512
 - A100, A30 → `sm80`
 - RTX 3090, A40 → `sm86`
 - T4, RTX 2080 Ti → `sm75`
-- B100, B200 → `sm100`
-- RTX 5090 → `sm120`
+- B100, B200 / RTX 5090 → Use `ort-1.24` branch (Blackwell requires CUTLASS 4.x)
 
 **Which CPU ISA do I need?**
 - Most modern x86-64 servers → `avx512`
