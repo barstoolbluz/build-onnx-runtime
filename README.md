@@ -1,6 +1,6 @@
 # ONNX Runtime Custom Build Environment
 
-> **You are on the `main` branch** — ONNX Runtime 1.23.2 + CUDA 12.9 + Driver 560+ (36 variants)
+> **You are on the `ort-1.24` branch** — ONNX Runtime 1.24.2 + CUDA 12.9 + Driver 560+ (36 variants)
 
 This Flox environment builds custom ONNX Runtime variants with targeted optimizations for specific GPU architectures and CPU instruction sets.
 
@@ -10,8 +10,8 @@ Each branch tracks a specific ONNX Runtime version. The CUDA toolkit version and
 
 | Branch | ORT Version | CUDA | Min Driver | Status |
 |--------|-------------|------|------------|--------|
-| `main` | 1.23.2 | 12.9 | 560+ | Current stable |
-| `ort-1.24` | 1.24.x | TBD | TBD | Future |
+| `main` | 1.23.2 | 12.9 | 560+ | Stable |
+| `ort-1.24` | 1.24.2 | 12.9 | 560+ | Current |
 | `ort-1.22` | 1.22.x | TBD | TBD | Future (compat) |
 
 To use a different ORT version, check out the corresponding branch. All variants on a branch share the same ORT version, CUDA toolkit, and nixpkgs pin.
@@ -43,8 +43,10 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 
 | Component | Version | Min Driver | Notes |
 |-----------|---------|------------|-------|
-| ONNX Runtime | 1.23.2 | — | From source via CMake |
-| CUTLASS | 3.9.2 | — | Bundled, Blackwell support |
+| ONNX Runtime | 1.24.2 | — | From source via CMake (version override on nixpkgs 1.23.2 base) |
+| CUTLASS | 4.2.1 | — | Bundled, Blackwell support |
+| ONNX | 1.20.1 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_ONNX` |
+| abseil-cpp | 20250814.0 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_ABSEIL_CPP` |
 | CUDA Toolkit | 12.9 | 560+ | Via nixpkgs `cudaPackages_12_9` |
 | Python | 3.13 | — | Via nixpkgs |
 | Nixpkgs | [`ed142ab`](https://github.com/NixOS/nixpkgs/tree/ed142ab1b3a092c4d149245d0c4126a5d7ea00b0) | — | Pinned revision |
