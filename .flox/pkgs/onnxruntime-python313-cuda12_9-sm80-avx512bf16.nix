@@ -1,4 +1,4 @@
-# ONNX Runtime 1.20.1 for NVIDIA Ampere DC (SM80: A100, A30) + AVX-512 BF16
+# ONNX Runtime 1.19.2 for NVIDIA Ampere DC (SM80: A100, A30) + AVX-512 BF16
 # CUDA 12.9 — Requires NVIDIA driver 560+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -16,21 +16,21 @@ let
   variantName = "onnxruntime-python313-cuda12_9-sm80-avx512bf16";
   # ────────────────────────────────────────────────────────────────────
 
-  # ── ORT 1.20.1 source override ─────────────────────────────────────
-  ortVersion = "1.20.1";
+  # ── ORT 1.19.2 source override ─────────────────────────────────────
+  ortVersion = "1.19.2";
   ortSrc = fetchFromGitHub {
     owner = "microsoft";
     repo = "onnxruntime";
     tag = "v${ortVersion}";
     fetchSubmodules = true;
-    hash = "sha256-xIjR2HsVIqc78ojSXzoTGIxk7VndGYa8o4pVB8U8oXI=";
+    hash = "sha256-LLTPDvdWdK+2yo7uRVzjEQOEmc2ISEQ1Hp2SZSYSpSU=";
   };
   cutlass-src = fetchFromGitHub {
     name = "cutlass-src";
     owner = "NVIDIA";
     repo = "cutlass";
-    tag = "v3.5.1";
-    hash = "sha256-sTGYN+bjtEqQ7Ootr/wvx3P9f8MCDSSj3qyCWjfdLEA=";
+    tag = "v3.5.0";
+    hash = "sha256-D/s7eYsa5l/mfx73tE4mnFcTQdYqGmXa9d9TCryw4e4=";
   };
   onnx-src = fetchFromGitHub {
     name = "onnx-src";
@@ -79,7 +79,6 @@ let
     postPatch = ''
       substituteInPlace cmake/libonnxruntime.pc.cmake.in \
         --replace-fail '$'{prefix}/@CMAKE_INSTALL_ @CMAKE_INSTALL_
-      echo "find_package(cudnn_frontend REQUIRED)" > cmake/external/cudnn_frontend.cmake
       substituteInPlace onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h \
         --replace-fail "#pragma once" "#pragma once
 #include <cstdint>"
@@ -92,6 +91,15 @@ let
       substituteInPlace cmake/external/onnxruntime_external_deps.cmake \
         --replace-fail "set(ONNXRUNTIME_CLOG_TARGET_NAME clog)" \
         "set(ONNXRUNTIME_CLOG_TARGET_NAME cpuinfo::cpuinfo)"
+      # Fix protobuf discovery: remove version constraint, add lowercase name (backport from ORT 1.20.1)
+      substituteInPlace cmake/external/onnxruntime_external_deps.cmake \
+        --replace-fail "FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf" \
+        "FIND_PACKAGE_ARGS NAMES Protobuf protobuf"
+      # Use system Eigen3 instead of FetchContent (backport from ORT 1.20.1)
+      cat > cmake/external/eigen.cmake << 'EIGENEOF'
+find_package(Eigen3 CONFIG REQUIRED)
+get_target_property(eigen_INCLUDE_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+EIGENEOF
       # Disable -Werror for GCC 15 compatibility
       substituteInPlace cmake/CMakeLists.txt \
         --replace-fail "COMPILE_WARNING_AS_ERROR ON" "COMPILE_WARNING_AS_ERROR OFF"
@@ -111,6 +119,7 @@ let
         !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_UTF8_RANGE" s) &&
         !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO" s) &&
         !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PTHREADPOOL" s) &&
+        !(lib.hasPrefix "-Donnxruntime_USE_FULL_PROTOBUF" s) &&
         !(lib.hasPrefix "-DCMAKE_CUDA_ARCHITECTURES" s)
       ) (oldAttrs.cmakeFlags or []);
     in filtered ++ [
@@ -120,6 +129,7 @@ let
       (lib.cmakeBool "onnxruntime_ENABLE_WERROR" false)
       (lib.cmakeBool "CMAKE_COMPILE_WARNING_AS_ERROR" false)
       (lib.cmakeBool "onnxruntime_BUILD_UNIT_TESTS" false)
+      (lib.cmakeBool "onnxruntime_USE_FULL_PROTOBUF" true)
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC" "${nsync-src}")
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_UTF8_RANGE" "${utf8_range-src}")
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO" "${cpuinfo-src}")
@@ -138,7 +148,7 @@ in
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.20.1 for NVIDIA A100/A30 (SM80) + AVX-512 BF16 [CUDA 12.9]";
+      description = "ONNX Runtime 1.19.2 for NVIDIA A100/A30 (SM80) + AVX-512 BF16 [CUDA 12.9]";
       platforms = [ "x86_64-linux" ];
     };
   })

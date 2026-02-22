@@ -1,4 +1,4 @@
-# ONNX Runtime 1.20.1 CPU-only + AVX-512 BF16
+# ONNX Runtime 1.19.2 CPU-only + AVX-512 BF16
 { pkgs ? import <nixpkgs> {} }:
 let
   nixpkgs_pinned = import (builtins.fetchTarball {
@@ -13,14 +13,14 @@ let
   variantName = "onnxruntime-python313-cpu-avx512bf16";
   # ────────────────────────────────────────────────────────────────────
 
-  # ── ORT 1.20.1 source override ─────────────────────────────────────
-  ortVersion = "1.20.1";
+  # ── ORT 1.19.2 source override ─────────────────────────────────────
+  ortVersion = "1.19.2";
   ortSrc = fetchFromGitHub {
     owner = "microsoft";
     repo = "onnxruntime";
     tag = "v${ortVersion}";
     fetchSubmodules = true;
-    hash = "sha256-xIjR2HsVIqc78ojSXzoTGIxk7VndGYa8o4pVB8U8oXI=";
+    hash = "sha256-LLTPDvdWdK+2yo7uRVzjEQOEmc2ISEQ1Hp2SZSYSpSU=";
   };
   onnx-src = fetchFromGitHub {
     name = "onnx-src";
@@ -81,6 +81,15 @@ let
       substituteInPlace cmake/external/onnxruntime_external_deps.cmake \
         --replace-fail "set(ONNXRUNTIME_CLOG_TARGET_NAME clog)" \
         "set(ONNXRUNTIME_CLOG_TARGET_NAME cpuinfo::cpuinfo)"
+      # Fix protobuf discovery: remove version constraint, add lowercase name (backport from ORT 1.20.1)
+      substituteInPlace cmake/external/onnxruntime_external_deps.cmake \
+        --replace-fail "FIND_PACKAGE_ARGS 3.21.12 NAMES Protobuf" \
+        "FIND_PACKAGE_ARGS NAMES Protobuf protobuf"
+      # Use system Eigen3 instead of FetchContent (backport from ORT 1.20.1)
+      cat > cmake/external/eigen.cmake << 'EIGENEOF'
+find_package(Eigen3 CONFIG REQUIRED)
+get_target_property(eigen_INCLUDE_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+EIGENEOF
       # Disable -Werror for GCC 15 compatibility
       substituteInPlace cmake/CMakeLists.txt \
         --replace-fail "COMPILE_WARNING_AS_ERROR ON" "COMPILE_WARNING_AS_ERROR OFF"
@@ -97,7 +106,8 @@ let
         !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC" s) &&
         !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_UTF8_RANGE" s) &&
         !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO" s) &&
-        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PTHREADPOOL" s)
+        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PTHREADPOOL" s) &&
+        !(lib.hasPrefix "-Donnxruntime_USE_FULL_PROTOBUF" s)
       ) (oldAttrs.cmakeFlags or []);
     in filtered ++ [
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_ONNX" "${onnx-src}")
@@ -105,6 +115,7 @@ let
       (lib.cmakeBool "onnxruntime_ENABLE_WERROR" false)
       (lib.cmakeBool "CMAKE_COMPILE_WARNING_AS_ERROR" false)
       (lib.cmakeBool "onnxruntime_BUILD_UNIT_TESTS" false)
+      (lib.cmakeBool "onnxruntime_USE_FULL_PROTOBUF" true)
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC" "${nsync-src}")
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_UTF8_RANGE" "${utf8_range-src}")
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO" "${cpuinfo-src}")
