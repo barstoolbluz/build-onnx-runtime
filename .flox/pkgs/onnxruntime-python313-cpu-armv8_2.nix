@@ -1,4 +1,4 @@
-# ONNX Runtime 1.22.2 CPU-only + ARMv8.2 (Graviton2)
+# ONNX Runtime 1.20.1 CPU-only + ARMv8.2 (Graviton2)
 { pkgs ? import <nixpkgs> {} }:
 let
   nixpkgs_pinned = import (builtins.fetchTarball {
@@ -13,21 +13,49 @@ let
   variantName = "onnxruntime-python313-cpu-armv8_2";
   # ────────────────────────────────────────────────────────────────────
 
-  # ── ORT 1.22.2 source override ─────────────────────────────────────
-  ortVersion = "1.22.2";
+  # ── ORT 1.20.1 source override ─────────────────────────────────────
+  ortVersion = "1.20.1";
   ortSrc = fetchFromGitHub {
     owner = "microsoft";
     repo = "onnxruntime";
     tag = "v${ortVersion}";
     fetchSubmodules = true;
-    hash = "sha256-X8Pdtc0eR0iU+Xi2A1HrNo1xqCnoaxNjj4QFm/E3kSE=";
+    hash = "sha256-xIjR2HsVIqc78ojSXzoTGIxk7VndGYa8o4pVB8U8oXI=";
   };
   onnx-src = fetchFromGitHub {
     name = "onnx-src";
     owner = "onnx";
     repo = "onnx";
-    tag = "v1.17.0";
-    hash = "sha256-9oORW0YlQ6SphqfbjcYb0dTlHc+1gzy9quH/Lj6By8Q=";
+    tag = "v1.16.1";
+    hash = "sha256-I1wwfn91hdH3jORIKny0Xc73qW2P04MjkVCgcaNnQUE=";
+  };
+  nsync-src = fetchFromGitHub {
+    name = "nsync-src";
+    owner = "google";
+    repo = "nsync";
+    tag = "1.26.0";
+    hash = "sha256-pE9waDI+6LQwbyPJ4zROoF93Vt6+SETxxJ/UxeZE5WE=";
+  };
+  utf8_range-src = fetchFromGitHub {
+    name = "utf8_range-src";
+    owner = "protocolbuffers";
+    repo = "utf8_range";
+    rev = "72c943dea2b9240cd09efde15191e144bc7c7d38";
+    hash = "sha256-rhd035bVtMYrHl6yzrchKuYPrscHC5uxivdyzDtIwo0=";
+  };
+  cpuinfo-src = fetchFromGitHub {
+    name = "cpuinfo-src";
+    owner = "pytorch";
+    repo = "cpuinfo";
+    rev = "ca678952a9a8eaa6de112d154e8e104b22f9ab3f";
+    hash = "sha256-UKy9TIiO/UJ5w+qLRlMd085CX2qtdVH2W3rtxB5r6MY=";
+  };
+  pthreadpool-src = fetchFromGitHub {
+    name = "pthreadpool-src";
+    owner = "Maratyszcza";
+    repo = "pthreadpool";
+    rev = "4fe0e1e183925bf8cfa6aae24237e724a96479b8";
+    hash = "sha256-R4YmNzWEELSkAws/ejmNVxqXDTJwcqjLU/o/HvgRn2E=";
   };
   # ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +72,18 @@ let
       substituteInPlace onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h \
         --replace-fail "#pragma once" "#pragma once
 #include <cstdint>"
+      substituteInPlace onnxruntime/core/optimizer/transpose_optimization/onnx_transpose_optimization.cc \
+        --replace-fail "#include <cassert>" "#include <cassert>
+#include <cstring>"
+      # Backport protobuf 5.26+ compatibility from ORT 1.22.2
+      sed -i '/ClearedCount/,+3d' onnxruntime/core/graph/graph.cc
+      # Fix clog: system cpuinfo doesn't export separate clog target
+      substituteInPlace cmake/external/onnxruntime_external_deps.cmake \
+        --replace-fail "set(ONNXRUNTIME_CLOG_TARGET_NAME clog)" \
+        "set(ONNXRUNTIME_CLOG_TARGET_NAME cpuinfo::cpuinfo)"
+      # Disable -Werror for GCC 15 compatibility
+      substituteInPlace cmake/CMakeLists.txt \
+        --replace-fail "COMPILE_WARNING_AS_ERROR ON" "COMPILE_WARNING_AS_ERROR OFF"
       substituteInPlace onnxruntime/core/platform/env.h \
         --replace-fail "GetRuntimePath() const { return PathString(); }" \
         "GetRuntimePath() const { return PathString(\"$out/lib/\"); }"
@@ -52,14 +92,27 @@ let
     cmakeFlags = let
       filtered = builtins.filter (f:
         let s = builtins.toString f; in
-        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_ONNX" s)
+        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_ONNX" s) &&
+        !(lib.hasPrefix "-Donnxruntime_BUILD_UNIT_TESTS" s) &&
+        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC" s) &&
+        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_UTF8_RANGE" s) &&
+        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO" s) &&
+        !(lib.hasPrefix "-DFETCHCONTENT_SOURCE_DIR_PTHREADPOOL" s)
       ) (oldAttrs.cmakeFlags or []);
     in filtered ++ [
       (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_ONNX" "${onnx-src}")
+      (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
+      (lib.cmakeBool "onnxruntime_ENABLE_WERROR" false)
+      (lib.cmakeBool "CMAKE_COMPILE_WARNING_AS_ERROR" false)
+      (lib.cmakeBool "onnxruntime_BUILD_UNIT_TESTS" false)
+      (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC" "${nsync-src}")
+      (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_UTF8_RANGE" "${utf8_range-src}")
+      (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO" "${cpuinfo-src}")
+      (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_PTHREADPOOL" "${pthreadpool-src}")
     ];
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
-      export CXXFLAGS="${lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
+      export CXXFLAGS="-Wno-error ${lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
       export CFLAGS="${lib.concatStringsSep " " cpuFlags} $CFLAGS"
     '';
   });

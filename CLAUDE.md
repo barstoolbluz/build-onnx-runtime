@@ -47,15 +47,25 @@ Examples:
 
 ### Nixpkgs Pin
 - Revision: `ed142ab1b3a092c4d149245d0c4126a5d7ea00b0`
-- ONNX Runtime base: 1.23.2, overridden to **1.22.2** via `version`/`src`/`patches`/`postPatch`/`cmakeFlags` override
+- ONNX Runtime base: 1.23.2, overridden to **1.20.1** via `version`/`src`/`patches`/`postPatch`/`cmakeFlags` override
 - CUTLASS: 3.5.1 (overridden via `FETCHCONTENT_SOURCE_DIR_CUTLASS`, GPU variants only)
-- ONNX: 1.17.0 (overridden via `FETCHCONTENT_SOURCE_DIR_ONNX`, all variants)
-- abseil-cpp: nixpkgs default 20240722 (no override needed — compatible with ORT 1.22.2)
+- ONNX: 1.16.1 (overridden via `FETCHCONTENT_SOURCE_DIR_ONNX`, all variants)
+- nsync: 1.26.0 (overridden via `FETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC`, all variants — removed in ORT 1.22+)
+- utf8_range: 72c943d (overridden via `FETCHCONTENT_SOURCE_DIR_UTF8_RANGE`, all variants — removed in ORT 1.22+)
+- cpuinfo: ca67895 (overridden via `FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO`, all variants)
+- pthreadpool: 4fe0e1e (overridden via `FETCHCONTENT_SOURCE_DIR_PTHREADPOOL`, all variants)
+- abseil-cpp: nixpkgs default 20240722 (no override needed — compatible with ORT 1.20.1)
 - CUDA: 12.9 via `cudaPackages_12_9` overlay — **requires NVIDIA driver 560+**
 - Python: 3.13
 
-### GCC 15 Compatibility
-ORT 1.22.2 requires a `postPatch` fix to add `#include <cstdint>` to `onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h` for GCC 15 compatibility. This is handled in each `.nix` file's `postPatch` block.
+### GCC 15 / Nixpkgs Compatibility
+ORT 1.20.1 requires several backports to build with GCC 15 and nixpkgs protobuf 32.1:
+- `#include <cstdint>` added to `optimizer_api.h`
+- `#include <cstring>` added to `onnx_transpose_optimization.cc`
+- `COMPILE_WARNING_AS_ERROR` set to `OFF` in `cmake/CMakeLists.txt`
+- Protobuf `ClearedCount()`/`ReleaseCleared()` calls removed from `graph.cc` (APIs removed in protobuf 5.26+)
+- `ONNXRUNTIME_CLOG_TARGET_NAME` set to `cpuinfo::cpuinfo` (system cpuinfo doesn't export separate clog target)
+- Unit tests disabled (`onnxruntime_BUILD_UNIT_TESTS=FALSE`) — test deps incompatible with nixpkgs
 
 ### Branch Strategy
 Branches track ORT versions. The CUDA toolkit version is a property of the branch, documented in README.md, CLAUDE.md, and each `.nix` file header comment.
@@ -63,17 +73,18 @@ Branches track ORT versions. The CUDA toolkit version is a property of the branc
 - **main**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (stable)
 - **ort-1.24**: ONNX Runtime 1.24.2 + CUDA 12.9, driver 560+ (current, Blackwell support)
 - **ort-1.22**: ONNX Runtime 1.22.2 + CUDA 12.9, driver 560+ (compat, no Blackwell)
+- **ort-1.20**: ONNX Runtime 1.20.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
 
 ### CUDA Version Documentation
 Each GPU `.nix` file includes a two-line header comment:
 ```nix
-# ONNX Runtime 1.22.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
+# ONNX Runtime 1.20.1 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
 # CUDA 12.9 — Requires NVIDIA driver 560+
 ```
 
 The `meta.description` also includes the CUDA version:
 ```nix
-description = "ONNX Runtime 1.22.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
+description = "ONNX Runtime 1.20.1 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
 ```
 
 ## Package Development Guidelines
@@ -106,9 +117,10 @@ Two approaches depending on nixpkgs availability:
 - Keep the existing nixpkgs pin for build infrastructure
 - Override `version`, `src`, `patches`, `postPatch`, and `cmakeFlags` in `overrideAttrs`
 - Fetch new source via `fetchFromGitHub` with `fetchSubmodules = true`
-- Override vendored deps (CUTLASS, ONNX) via `FETCHCONTENT_SOURCE_DIR_*` cmake flags
+- Override vendored deps (CUTLASS, ONNX, nsync, utf8_range, cpuinfo, pthreadpool) via `FETCHCONTENT_SOURCE_DIR_*` cmake flags
 - Clear `patches = []` since nixpkgs patches are version-specific
-- Provide compatible `postPatch` for the new source (including GCC compatibility fixes)
+- Provide compatible `postPatch` for the new source (including GCC 15 + protobuf compatibility fixes)
+- Note: Older ORT versions may need additional vendored deps not required by newer versions (e.g., nsync, utf8_range were removed in ORT 1.22+)
 
 In both cases, test a representative GPU and CPU-only variant before committing.
 
