@@ -1,4 +1,4 @@
-# ONNX Runtime 1.19.2 for NVIDIA Ampere (SM86: RTX 3090, A40) + AVX-512 BF16
+# ONNX Runtime 1.18.1 for NVIDIA Ampere (SM86: RTX 3090, A40) + AVX-512 BF16
 # CUDA 12.9 — Requires NVIDIA driver 560+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -16,28 +16,28 @@ let
   variantName = "onnxruntime-python313-cuda12_9-sm86-avx512bf16";
   # ────────────────────────────────────────────────────────────────────
 
-  # ── ORT 1.19.2 source override ─────────────────────────────────────
-  ortVersion = "1.19.2";
+  # ── ORT 1.18.1 source override ─────────────────────────────────────
+  ortVersion = "1.18.1";
   ortSrc = fetchFromGitHub {
     owner = "microsoft";
     repo = "onnxruntime";
     tag = "v${ortVersion}";
     fetchSubmodules = true;
-    hash = "sha256-LLTPDvdWdK+2yo7uRVzjEQOEmc2ISEQ1Hp2SZSYSpSU=";
+    hash = "sha256-+zWtbLKekGhwdBU3bm1u2F7rYejQ62epE+HcHj05/8A=";
   };
   cutlass-src = fetchFromGitHub {
     name = "cutlass-src";
     owner = "NVIDIA";
     repo = "cutlass";
-    tag = "v3.5.0";
-    hash = "sha256-D/s7eYsa5l/mfx73tE4mnFcTQdYqGmXa9d9TCryw4e4=";
+    tag = "v3.1.0";
+    hash = "sha256-mpaiCxiYR1WaSSkcEPTzvcREenJWklD+HRdTT5/pD54=";
   };
   onnx-src = fetchFromGitHub {
     name = "onnx-src";
     owner = "onnx";
     repo = "onnx";
-    tag = "v1.16.1";
-    hash = "sha256-I1wwfn91hdH3jORIKny0Xc73qW2P04MjkVCgcaNnQUE=";
+    tag = "v1.16.0";
+    hash = "sha256-mgYrY3IXUMgG/2/SjwMWAX0FneY+E8SpLDMnB9EUbF4=";
   };
   nsync-src = fetchFromGitHub {
     name = "nsync-src";
@@ -57,8 +57,8 @@ let
     name = "cpuinfo-src";
     owner = "pytorch";
     repo = "cpuinfo";
-    rev = "ca678952a9a8eaa6de112d154e8e104b22f9ab3f";
-    hash = "sha256-UKy9TIiO/UJ5w+qLRlMd085CX2qtdVH2W3rtxB5r6MY=";
+    rev = "959002f82d7962a473d8bf301845f2af720e0aa4";
+    hash = "sha256-nOSaLZGqmt+8W5Ut9QHDKznh1cekl1jL2ghCM4mgbgc=";
   };
   pthreadpool-src = fetchFromGitHub {
     name = "pthreadpool-src";
@@ -148,7 +148,7 @@ in
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.19.2 for NVIDIA RTX 3090/A40 (SM86) + AVX-512 BF16 [CUDA 12.9]";
+      description = "ONNX Runtime 1.18.1 for NVIDIA RTX 3090/A40 (SM86) + AVX-512 BF16 [CUDA 12.9]";
       platforms = [ "x86_64-linux" ];
     };
   })

@@ -1,6 +1,6 @@
 # ONNX Runtime Custom Build Environment
 
-> **You are on the `ort-1.19` branch** — ONNX Runtime 1.19.2 + CUDA 12.9 + Driver 560+ (28 variants)
+> **You are on the `ort-1.18` branch** — ONNX Runtime 1.18.1 + CUDA 12.9 + Driver 560+ (28 variants)
 
 This Flox environment builds custom ONNX Runtime variants with targeted optimizations for specific GPU architectures and CPU instruction sets.
 
@@ -15,6 +15,7 @@ Each branch tracks a specific ONNX Runtime version. The CUDA toolkit version and
 | `ort-1.22` | 1.22.2 | 12.9 | 560+ | Compat |
 | `ort-1.20` | 1.20.1 | 12.9 | 560+ | Legacy |
 | `ort-1.19` | 1.19.2 | 12.9 | 560+ | Legacy |
+| `ort-1.18` | 1.18.1 | 12.9 | 560+ | Legacy |
 
 To use a different ORT version, check out the corresponding branch. All variants on a branch share the same ORT version, CUDA toolkit, and nixpkgs pin.
 
@@ -45,12 +46,12 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 
 | Component | Version | Min Driver | Notes |
 |-----------|---------|------------|-------|
-| ONNX Runtime | 1.19.2 | — | From source via CMake (version override on nixpkgs 1.23.2 base) |
-| CUTLASS | 3.5.0 | — | Bundled (GPU only), no Blackwell support |
-| ONNX | 1.16.1 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_ONNX` |
+| ONNX Runtime | 1.18.1 | — | From source via CMake (version override on nixpkgs 1.23.2 base) |
+| CUTLASS | 3.1.0 | — | Bundled (GPU only), no Blackwell support |
+| ONNX | 1.16.0 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_ONNX` |
 | nsync | 1.26.0 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC` |
 | utf8_range | 72c943d | — | Bundled via `FETCHCONTENT_SOURCE_DIR_UTF8_RANGE` |
-| cpuinfo | ca67895 | — | Bundled via `FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO` |
+| cpuinfo | 959002f | — | Bundled via `FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO` |
 | pthreadpool | 4fe0e1e | — | Bundled via `FETCHCONTENT_SOURCE_DIR_PTHREADPOOL` |
 | CUDA Toolkit | 12.9 | 560+ | Via nixpkgs `cudaPackages_12_9` |
 | Python | 3.13 | — | Via nixpkgs |
@@ -132,7 +133,7 @@ ONNX Runtime uses CMake. The Nix derivations use `.override` + `.overrideAttrs` 
 
 ### GCC 15 / Nixpkgs Compatibility Patches
 
-ORT 1.19.2 requires several backports to build with GCC 15 and nixpkgs protobuf 32.1:
+ORT 1.18.1 requires several backports to build with GCC 15 and nixpkgs protobuf 32.1:
 
 - **`#include <cstdint>`** in `optimizer_api.h` (GCC 15 strict includes)
 - **`#include <cstring>`** in `onnx_transpose_optimization.cc` (GCC 15 `std::memcpy`)

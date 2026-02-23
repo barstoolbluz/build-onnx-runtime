@@ -1,4 +1,4 @@
-# ONNX Runtime 1.19.2 CPU-only + AVX-512 BF16
+# ONNX Runtime 1.18.1 CPU-only + AVX-512 BF16
 { pkgs ? import <nixpkgs> {} }:
 let
   nixpkgs_pinned = import (builtins.fetchTarball {
@@ -13,21 +13,21 @@ let
   variantName = "onnxruntime-python313-cpu-avx512bf16";
   # ────────────────────────────────────────────────────────────────────
 
-  # ── ORT 1.19.2 source override ─────────────────────────────────────
-  ortVersion = "1.19.2";
+  # ── ORT 1.18.1 source override ─────────────────────────────────────
+  ortVersion = "1.18.1";
   ortSrc = fetchFromGitHub {
     owner = "microsoft";
     repo = "onnxruntime";
     tag = "v${ortVersion}";
     fetchSubmodules = true;
-    hash = "sha256-LLTPDvdWdK+2yo7uRVzjEQOEmc2ISEQ1Hp2SZSYSpSU=";
+    hash = "sha256-+zWtbLKekGhwdBU3bm1u2F7rYejQ62epE+HcHj05/8A=";
   };
   onnx-src = fetchFromGitHub {
     name = "onnx-src";
     owner = "onnx";
     repo = "onnx";
-    tag = "v1.16.1";
-    hash = "sha256-I1wwfn91hdH3jORIKny0Xc73qW2P04MjkVCgcaNnQUE=";
+    tag = "v1.16.0";
+    hash = "sha256-mgYrY3IXUMgG/2/SjwMWAX0FneY+E8SpLDMnB9EUbF4=";
   };
   nsync-src = fetchFromGitHub {
     name = "nsync-src";
@@ -47,8 +47,8 @@ let
     name = "cpuinfo-src";
     owner = "pytorch";
     repo = "cpuinfo";
-    rev = "ca678952a9a8eaa6de112d154e8e104b22f9ab3f";
-    hash = "sha256-UKy9TIiO/UJ5w+qLRlMd085CX2qtdVH2W3rtxB5r6MY=";
+    rev = "959002f82d7962a473d8bf301845f2af720e0aa4";
+    hash = "sha256-nOSaLZGqmt+8W5Ut9QHDKznh1cekl1jL2ghCM4mgbgc=";
   };
   pthreadpool-src = fetchFromGitHub {
     name = "pthreadpool-src";

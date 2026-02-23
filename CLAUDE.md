@@ -47,20 +47,20 @@ Examples:
 
 ### Nixpkgs Pin
 - Revision: `ed142ab1b3a092c4d149245d0c4126a5d7ea00b0`
-- ONNX Runtime base: 1.23.2, overridden to **1.19.2** via `version`/`src`/`patches`/`postPatch`/`cmakeFlags` override
-- CUTLASS: 3.5.0 (overridden via `FETCHCONTENT_SOURCE_DIR_CUTLASS`, GPU variants only)
-- ONNX: 1.16.1 (overridden via `FETCHCONTENT_SOURCE_DIR_ONNX`, all variants)
+- ONNX Runtime base: 1.23.2, overridden to **1.18.1** via `version`/`src`/`patches`/`postPatch`/`cmakeFlags` override
+- CUTLASS: 3.1.0 (overridden via `FETCHCONTENT_SOURCE_DIR_CUTLASS`, GPU variants only)
+- ONNX: 1.16.0 (overridden via `FETCHCONTENT_SOURCE_DIR_ONNX`, all variants)
 - Eigen: system Eigen3 (eigen.cmake replaced with `find_package(Eigen3 CONFIG)` — ORT 1.19 FetchContent Eigen incompatible with disconnected mode)
 - nsync: 1.26.0 (overridden via `FETCHCONTENT_SOURCE_DIR_GOOGLE_NSYNC`, all variants — removed in ORT 1.22+)
 - utf8_range: 72c943d (overridden via `FETCHCONTENT_SOURCE_DIR_UTF8_RANGE`, all variants — removed in ORT 1.22+)
-- cpuinfo: ca67895 (overridden via `FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO`, all variants)
+- cpuinfo: 959002f (overridden via `FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO`, all variants)
 - pthreadpool: 4fe0e1e (overridden via `FETCHCONTENT_SOURCE_DIR_PTHREADPOOL`, all variants)
-- abseil-cpp: nixpkgs default 20240722 (no override needed — compatible with ORT 1.19.2)
+- abseil-cpp: nixpkgs default 20240722 (no override needed — compatible with ORT 1.18.1)
 - CUDA: 12.9 via `cudaPackages_12_9` overlay — **requires NVIDIA driver 560+**
 - Python: 3.13
 
 ### GCC 15 / Nixpkgs Compatibility
-ORT 1.19.2 requires several backports to build with GCC 15 and nixpkgs protobuf 32.1:
+ORT 1.18.1 requires several backports to build with GCC 15 and nixpkgs protobuf 32.1:
 - `#include <cstdint>` added to `optimizer_api.h`
 - `#include <cstring>` added to `onnx_transpose_optimization.cc`
 - `COMPILE_WARNING_AS_ERROR` set to `OFF` in `cmake/CMakeLists.txt`
@@ -79,17 +79,18 @@ Branches track ORT versions. The CUDA toolkit version is a property of the branc
 - **ort-1.22**: ONNX Runtime 1.22.2 + CUDA 12.9, driver 560+ (compat, no Blackwell)
 - **ort-1.20**: ONNX Runtime 1.20.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
 - **ort-1.19**: ONNX Runtime 1.19.2 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
+- **ort-1.18**: ONNX Runtime 1.18.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
 
 ### CUDA Version Documentation
 Each GPU `.nix` file includes a two-line header comment:
 ```nix
-# ONNX Runtime 1.19.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
+# ONNX Runtime 1.18.1 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
 # CUDA 12.9 — Requires NVIDIA driver 560+
 ```
 
 The `meta.description` also includes the CUDA version:
 ```nix
-description = "ONNX Runtime 1.19.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
+description = "ONNX Runtime 1.18.1 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
 ```
 
 ## Package Development Guidelines
