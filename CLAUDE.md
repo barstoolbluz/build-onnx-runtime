@@ -76,9 +76,11 @@ Branches track ORT versions. The CUDA toolkit version is a property of the branc
 
 - **main**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (stable)
 - **ort-1.24**: ONNX Runtime 1.24.2 + CUDA 12.9, driver 560+ (current, Blackwell support)
+- **ort-1.23**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (stable, Blackwell support)
 - **ort-1.22**: ONNX Runtime 1.22.2 + CUDA 12.9, driver 560+ (compat, no Blackwell)
 - **ort-1.20**: ONNX Runtime 1.20.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
 - **ort-1.19**: ONNX Runtime 1.19.2 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
+- **ort-1.18**: ONNX Runtime 1.18.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
 
 ### CUDA Version Documentation
 Each GPU `.nix` file includes a two-line header comment:

@@ -12,9 +12,11 @@ Each branch tracks a specific ONNX Runtime version. The CUDA toolkit version and
 |--------|-------------|------|------------|--------|
 | `main` | 1.23.2 | 12.9 | 560+ | Stable |
 | `ort-1.24` | 1.24.2 | 12.9 | 560+ | Current |
+| `ort-1.23` | 1.23.2 | 12.9 | 560+ | Stable |
 | `ort-1.22` | 1.22.2 | 12.9 | 560+ | Compat |
 | `ort-1.20` | 1.20.1 | 12.9 | 560+ | Legacy |
 | `ort-1.19` | 1.19.2 | 12.9 | 560+ | Legacy |
+| `ort-1.18` | 1.18.1 | 12.9 | 560+ | Legacy |
 
 To use a different ORT version, check out the corresponding branch. All variants on a branch share the same ORT version, CUDA toolkit, and nixpkgs pin.
 
