@@ -13,7 +13,7 @@ let
   # ── Variant-specific configuration ──────────────────────────────────
   gpuArchCMake = "90";
   cpuFlags = [ "-mavx2" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm90-avx2";
+  variantName = "onnxruntime-python312-cuda12_4-sm90-avx2";
   # ────────────────────────────────────────────────────────────────────
 
   # ── ORT 1.24.2 source override ─────────────────────────────────────
@@ -83,7 +83,7 @@ let
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;

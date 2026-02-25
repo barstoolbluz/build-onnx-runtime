@@ -31,15 +31,17 @@ Two-layer override:
 
 ### Package Naming Convention
 ```
-onnxruntime-python313-{cuda12_4|cuda12_9|cpu}[-sm{XX}]-{cpuisa}.nix
+onnxruntime-python312-cuda12_4[-sm{XX}]-{cpuisa}.nix
+onnxruntime-python313-{cuda12_9|cpu}[-sm{XX}]-{cpuisa}.nix
 ```
 
-The CUDA minor version is encoded in the filename (e.g., `cuda12_4` for CUDA 12.4, `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
+CUDA 12.4 variants use Python 3.12 (`python312Packages`); CUDA 12.9 and CPU-only variants use Python 3.13 (`python3Packages`).
+The CUDA minor version is encoded in the filename so the exact toolkit version is always visible.
 
 Examples:
-- `onnxruntime-python313-cuda12_9-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.9)
-- `onnxruntime-python313-cuda12_4-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.4)
-- `onnxruntime-python313-cpu-avx2.nix` (CPU-only with AVX2)
+- `onnxruntime-python313-cuda12_9-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.9, Python 3.13)
+- `onnxruntime-python312-cuda12_4-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.4, Python 3.12)
+- `onnxruntime-python313-cpu-avx2.nix` (CPU-only with AVX2, Python 3.13)
 
 ### Key Variables Per Variant
 - `gpuArchCMake`: CUDA compute capability for `CMAKE_CUDA_ARCHITECTURES` (e.g., `"90"`)
@@ -54,7 +56,7 @@ Examples:
 - abseil-cpp: 20250814.0 (overridden via `FETCHCONTENT_SOURCE_DIR_ABSEIL_CPP`, all variants)
 - CUDA: 12.4 via `cudaPackages_12_4` overlay — **requires NVIDIA driver 550+**
 - CUDA: 12.9 via `cudaPackages_12_9` overlay — **requires NVIDIA driver 560+**
-- Python: 3.13
+- Python: 3.13 (CUDA 12.9 + CPU variants), 3.12 (CUDA 12.4 variants)
 
 ### Branch Strategy
 Branches track ORT versions. The CUDA toolkit version is a property of the branch, documented in README.md, CLAUDE.md, and each `.nix` file header comment.
@@ -83,6 +85,8 @@ The `meta.description` also includes the CUDA version:
 description = "ONNX Runtime 1.24.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
 description = "ONNX Runtime 1.24.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.4]";
 ```
+
+CUDA 12.4 variants use python312Packages.onnxruntime (Python 3.12); CUDA 12.9 and CPU-only variants use python3Packages.onnxruntime (Python 3.13).
 
 ## Package Development Guidelines
 

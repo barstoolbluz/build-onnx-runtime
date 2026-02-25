@@ -1,4 +1,4 @@
-# ONNX Runtime 1.24.2 for NVIDIA Ampere (SM86: RTX 3090/A40) + AVX-512 VNNI
+# ONNX Runtime 1.24.2 for NVIDIA Blackwell (SM120: RTX 5090) + AVX-512 VNNI
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -11,9 +11,9 @@ let
   inherit (nixpkgs_pinned) lib fetchFromGitHub;
 
   # ── Variant-specific configuration ──────────────────────────────────
-  gpuArchCMake = "86";
+  gpuArchCMake = "120";
   cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mavx512vnni" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm86-avx512vnni";
+  variantName = "onnxruntime-python312-cuda12_4-sm120-avx512vnni";
   # ────────────────────────────────────────────────────────────────────
 
   # ── ORT 1.24.2 source override ─────────────────────────────────────
@@ -83,12 +83,12 @@ let
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.24.2 for NVIDIA RTX 3090/A40 (SM86) + AVX-512 VNNI [CUDA 12.4]";
+      description = "ONNX Runtime 1.24.2 for NVIDIA RTX 5090 (SM120) + AVX-512 VNNI [CUDA 12.4]";
       platforms = [ "x86_64-linux" ];
     };
   })
