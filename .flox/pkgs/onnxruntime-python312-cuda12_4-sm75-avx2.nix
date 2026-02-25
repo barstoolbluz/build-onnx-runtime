@@ -1,4 +1,4 @@
-# ONNX Runtime 1.18.1 for NVIDIA Ada (SM89: RTX 4090, L4, L40) + AVX2
+# ONNX Runtime 1.18.1 for NVIDIA Turing (SM75: T4, RTX 2080 Ti) + AVX2
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -11,9 +11,9 @@ let
   inherit (nixpkgs_pinned) lib fetchFromGitHub;
 
   # ── Variant-specific configuration ──────────────────────────────────
-  gpuArchCMake = "89";
+  gpuArchCMake = "75";
   cpuFlags = [ "-mavx2" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm89-avx2";
+  variantName = "onnxruntime-python312-cuda12_4-sm75-avx2";
   # ────────────────────────────────────────────────────────────────────
 
   # ── ORT 1.18.1 source override ─────────────────────────────────────
@@ -143,12 +143,12 @@ EIGENEOF
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.18.1 for NVIDIA RTX 4090/L4/L40 (SM89) + AVX2 [CUDA 12.4]";
+      description = "ONNX Runtime 1.18.1 for NVIDIA T4/RTX 2080 Ti (SM75) + AVX2 [CUDA 12.4]";
       platforms = [ "x86_64-linux" ];
     };
   })

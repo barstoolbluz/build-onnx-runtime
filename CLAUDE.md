@@ -31,15 +31,16 @@ Two-layer override:
 
 ### Package Naming Convention
 ```
-onnxruntime-python313-{cuda12_4|cuda12_9|cpu}[-sm{XX}]-{cpuisa}.nix
+onnxruntime-python312-cuda12_4[-sm{XX}]-{cpuisa}.nix   # CUDA 12.4, Python 3.12
+onnxruntime-python313-{cuda12_9|cpu}[-sm{XX}]-{cpuisa}.nix  # CUDA 12.9 / CPU, Python 3.13
 ```
 
-The CUDA minor version is encoded in the filename (e.g., `cuda12_4` for CUDA 12.4, `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
+The CUDA minor version and Python version are encoded in the filename. CUDA 12.4 variants use Python 3.12; CUDA 12.9 and CPU-only variants use Python 3.13.
 
 Examples:
-- `onnxruntime-python313-cuda12_9-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.9)
-- `onnxruntime-python313-cuda12_4-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.4)
-- `onnxruntime-python313-cpu-avx2.nix` (CPU-only with AVX2)
+- `onnxruntime-python313-cuda12_9-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.9, Python 3.13)
+- `onnxruntime-python312-cuda12_4-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.4, Python 3.12)
+- `onnxruntime-python313-cpu-avx2.nix` (CPU-only with AVX2, Python 3.13)
 
 ### Key Variables Per Variant
 - `gpuArchCMake`: CUDA compute capability for `CMAKE_CUDA_ARCHITECTURES` (e.g., `"90"`)
@@ -59,7 +60,7 @@ Examples:
 - abseil-cpp: nixpkgs default 20240722 (no override needed — compatible with ORT 1.18.1)
 - CUDA: 12.4 via `cudaPackages_12_4` overlay — **requires NVIDIA driver 550+**
 - CUDA: 12.9 via `cudaPackages_12_9` overlay — **requires NVIDIA driver 560+**
-- Python: 3.13
+- Python: 3.13 (CUDA 12.9 + CPU variants), 3.12 (CUDA 12.4 variants)
 
 ### GCC 15 / Nixpkgs Compatibility
 ORT 1.18.1 requires several backports to build with GCC 15 and nixpkgs protobuf 32.1:
@@ -94,6 +95,7 @@ Each GPU `.nix` file includes a two-line header comment:
 # ONNX Runtime 1.18.1 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
 # CUDA 12.4 — Requires NVIDIA driver 550+
 ```
+(Note: CUDA 12.4 files use `python312Packages`; CUDA 12.9 files use `python3Packages`.)
 
 The `meta.description` also includes the CUDA version:
 ```nix

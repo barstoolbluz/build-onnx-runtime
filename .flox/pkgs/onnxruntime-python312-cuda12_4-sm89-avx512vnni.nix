@@ -1,4 +1,4 @@
-# ONNX Runtime 1.18.1 for NVIDIA Ada (SM89: RTX 4090, L4, L40) + AVX-512
+# ONNX Runtime 1.18.1 for NVIDIA Ada (SM89: RTX 4090, L4, L40) + AVX-512 VNNI
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -12,8 +12,8 @@ let
 
   # ── Variant-specific configuration ──────────────────────────────────
   gpuArchCMake = "89";
-  cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm89-avx512";
+  cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mavx512vnni" "-mfma" ];
+  variantName = "onnxruntime-python312-cuda12_4-sm89-avx512vnni";
   # ────────────────────────────────────────────────────────────────────
 
   # ── ORT 1.18.1 source override ─────────────────────────────────────
@@ -143,12 +143,12 @@ EIGENEOF
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.18.1 for NVIDIA RTX 4090/L4/L40 (SM89) + AVX-512 [CUDA 12.4]";
+      description = "ONNX Runtime 1.18.1 for NVIDIA RTX 4090/L4/L40 (SM89) + AVX-512 VNNI [CUDA 12.4]";
       platforms = [ "x86_64-linux" ];
     };
   })

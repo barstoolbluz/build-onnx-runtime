@@ -1,4 +1,4 @@
-# ONNX Runtime 1.18.1 for NVIDIA Hopper (SM90: H100/Grace Hopper) + ARMv8.2 (Graviton2)
+# ONNX Runtime 1.18.1 for NVIDIA Ampere DC (SM80: A100, A30) + AVX2
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -11,9 +11,9 @@ let
   inherit (nixpkgs_pinned) lib fetchFromGitHub;
 
   # ── Variant-specific configuration ──────────────────────────────────
-  gpuArchCMake = "90";
-  cpuFlags = [ "-march=armv8.2-a+fp16+dotprod" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm90-armv8_2";
+  gpuArchCMake = "80";
+  cpuFlags = [ "-mavx2" "-mfma" ];
+  variantName = "onnxruntime-python312-cuda12_4-sm80-avx2";
   # ────────────────────────────────────────────────────────────────────
 
   # ── ORT 1.18.1 source override ─────────────────────────────────────
@@ -143,12 +143,12 @@ EIGENEOF
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.18.1 for NVIDIA H100/Grace Hopper (SM90) + ARMv8.2 (Graviton2) [CUDA 12.4]";
-      platforms = [ "aarch64-linux" ];
+      description = "ONNX Runtime 1.18.1 for NVIDIA A100/A30 (SM80) + AVX2 [CUDA 12.4]";
+      platforms = [ "x86_64-linux" ];
     };
   })

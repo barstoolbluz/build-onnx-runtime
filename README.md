@@ -24,8 +24,8 @@ To use a different ORT version, check out the corresponding branch. All variants
 
 GPU variants on this branch are available in two CUDA toolkit versions:
 
-- **CUDA 12.4** — requires **NVIDIA driver 550+** (R550 production branch, widely deployed in GPU serving fleets)
-- **CUDA 12.9** — requires **NVIDIA driver 560+** (latest toolkit features)
+- **CUDA 12.4 + Python 3.12** — requires **NVIDIA driver 550+** (R550 production branch, widely deployed in GPU serving fleets)
+- **CUDA 12.9 + Python 3.13** — requires **NVIDIA driver 560+** (latest toolkit features)
 
 Choose CUDA 12.4 variants for maximum deployment compatibility, or CUDA 12.9 for the latest toolkit.
 
@@ -62,7 +62,8 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 | pthreadpool | 4fe0e1e | — | Bundled via `FETCHCONTENT_SOURCE_DIR_PTHREADPOOL` |
 | CUDA Toolkit | 12.4 | 550+ | Via nixpkgs `cudaPackages_12_4` |
 | CUDA Toolkit | 12.9 | 560+ | Via nixpkgs `cudaPackages_12_9` |
-| Python | 3.13 | — | Via nixpkgs |
+| Python | 3.13 | — | Via nixpkgs (CUDA 12.9 + CPU variants) |
+| Python | 3.12 | — | Via nixpkgs (CUDA 12.4 variants) |
 | Nixpkgs | [`ed142ab`](https://github.com/NixOS/nixpkgs/tree/ed142ab1b3a092c4d149245d0c4126a5d7ea00b0) | — | Pinned revision |
 
 ## Build Matrix
@@ -98,8 +99,8 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 # Build a specific variant (CUDA 12.9)
 flox build onnxruntime-python313-cuda12_9-sm90-avx512
 
-# Build a specific variant (CUDA 12.4 — driver 550+)
-flox build onnxruntime-python313-cuda12_4-sm90-avx512
+# Build a specific variant (CUDA 12.4 — driver 550+, Python 3.12)
+flox build onnxruntime-python312-cuda12_4-sm90-avx512
 
 # The output is in result-<variant-name>/
 # Test it
@@ -130,10 +131,11 @@ flox build onnxruntime-python313-cuda12_4-sm90-avx512
 ## Naming Convention
 
 ```
-onnxruntime-python313-{cuda12_4|cuda12_9|cpu}[-sm{XX}]-{cpuisa}
+onnxruntime-python312-cuda12_4[-sm{XX}]-{cpuisa}   # CUDA 12.4, Python 3.12
+onnxruntime-python313-{cuda12_9|cpu}[-sm{XX}]-{cpuisa}  # CUDA 12.9 / CPU, Python 3.13
 ```
 
-The CUDA minor version is encoded in the filename (e.g., `cuda12_4` for CUDA 12.4, `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
+The CUDA minor version and Python version are encoded in the filename so the exact toolkit versions are always visible. CUDA 12.4 variants use Python 3.12 (the stable Python at the time CUDA 12.4 shipped); CUDA 12.9 and CPU-only variants use Python 3.13.
 
 ## Build Architecture
 
