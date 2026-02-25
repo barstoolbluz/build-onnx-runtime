@@ -1,6 +1,6 @@
 # ONNX Runtime Custom Build Environment
 
-> **You are on the `ort-1.18` branch** — ONNX Runtime 1.18.1 + CUDA 12.9 + Driver 560+ (28 variants)
+> **You are on the `ort-1.18` branch** — ONNX Runtime 1.18.1 + CUDA 12.4/12.9 + Driver 550+/560+ (50 variants)
 
 This Flox environment builds custom ONNX Runtime variants with targeted optimizations for specific GPU architectures and CPU instruction sets.
 
@@ -10,28 +10,34 @@ Each branch tracks a specific ONNX Runtime version. The CUDA toolkit version and
 
 | Branch | ORT Version | CUDA | Min Driver | Status |
 |--------|-------------|------|------------|--------|
-| `main` | 1.23.2 | 12.9 | 560+ | Stable |
-| `ort-1.24` | 1.24.2 | 12.9 | 560+ | Current |
-| `ort-1.23` | 1.23.2 | 12.9 | 560+ | Stable |
-| `ort-1.22` | 1.22.2 | 12.9 | 560+ | Compat |
-| `ort-1.20` | 1.20.1 | 12.9 | 560+ | Legacy |
-| `ort-1.19` | 1.19.2 | 12.9 | 560+ | Legacy |
-| `ort-1.18` | 1.18.1 | 12.9 | 560+ | Legacy |
+| `main` | 1.23.2 | 12.4, 12.9 | 550+/560+ | Stable |
+| `ort-1.24` | 1.24.2 | 12.4, 12.9 | 550+/560+ | Current |
+| `ort-1.23` | 1.23.2 | 12.4, 12.9 | 550+/560+ | Stable |
+| `ort-1.22` | 1.22.2 | 12.4, 12.9 | 550+/560+ | Compat |
+| `ort-1.20` | 1.20.1 | 12.4, 12.9 | 550+/560+ | Legacy |
+| `ort-1.19` | 1.19.2 | 12.4, 12.9 | 550+/560+ | Legacy |
+| `ort-1.18` | 1.18.1 | 12.4, 12.9 | 550+/560+ | Legacy |
 
 To use a different ORT version, check out the corresponding branch. All variants on a branch share the same ORT version, CUDA toolkit, and nixpkgs pin.
 
 ## CUDA Compatibility
 
-GPU variants on this branch are built against **CUDA 12.9** and require **NVIDIA driver 560+**.
+GPU variants on this branch are available in two CUDA toolkit versions:
 
-- **Forward compatibility**: CUDA 12.9 builds work with any driver that supports CUDA 12.9 or later
+- **CUDA 12.4** — requires **NVIDIA driver 550+** (R550 production branch, widely deployed in GPU serving fleets)
+- **CUDA 12.9** — requires **NVIDIA driver 560+** (latest toolkit features)
+
+Choose CUDA 12.4 variants for maximum deployment compatibility, or CUDA 12.9 for the latest toolkit.
+
+- **Forward compatibility**: Builds work with any driver that supports the target CUDA version or later
 - **No cross-major compatibility**: CUDA 12.x builds are **not** compatible with CUDA 11.x or 13.x runtimes
 - **Check your driver**: Run `nvidia-smi` — the "CUDA Version" in the top-right shows the maximum CUDA version your driver supports
 
 ```bash
-# Verify your driver supports CUDA 12.9
+# Verify your driver supports your target CUDA version
 nvidia-smi
-# Look for "CUDA Version: 12.9" or higher in the output
+# Look for "CUDA Version: 12.4" or higher (for cuda12_4 variants)
+# Look for "CUDA Version: 12.9" or higher (for cuda12_9 variants)
 ```
 
 ## Overview
@@ -54,13 +60,14 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 | utf8_range | 72c943d | — | Bundled via `FETCHCONTENT_SOURCE_DIR_UTF8_RANGE` |
 | cpuinfo | 959002f | — | Bundled via `FETCHCONTENT_SOURCE_DIR_PYTORCH_CPUINFO` |
 | pthreadpool | 4fe0e1e | — | Bundled via `FETCHCONTENT_SOURCE_DIR_PTHREADPOOL` |
+| CUDA Toolkit | 12.4 | 550+ | Via nixpkgs `cudaPackages_12_4` |
 | CUDA Toolkit | 12.9 | 560+ | Via nixpkgs `cudaPackages_12_9` |
 | Python | 3.13 | — | Via nixpkgs |
 | Nixpkgs | [`ed142ab`](https://github.com/NixOS/nixpkgs/tree/ed142ab1b3a092c4d149245d0c4126a5d7ea00b0) | — | Pinned revision |
 
 ## Build Matrix
 
-### GPU Variants (5 architectures x 4 x86 ISAs + 2 SM90 ARM = 22)
+### GPU Variants (5 architectures x 4 x86 ISAs + 2 SM90 ARM = 22 per CUDA version, 44 total)
 
 | SM | Architecture | GPUs | x86 ISAs | ARM ISAs |
 |----|-------------|------|----------|----------|
@@ -83,15 +90,18 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 | ARMv8.2 | `-march=armv8.2-a+fp16+dotprod` | Graviton2 | aarch64-linux |
 | ARMv9 | `-march=armv9-a+sve2` | Graviton3+, Grace | aarch64-linux |
 
-### Total: 28 variants (22 GPU + 6 CPU-only)
+### Total: 50 variants (44 GPU + 6 CPU-only)
 
 ## Quick Start
 
 ```bash
-# Build a specific variant
+# Build a specific variant (CUDA 12.9)
 flox build onnxruntime-python313-cuda12_9-sm90-avx512
 
-# The output is in result-onnxruntime-python313-cuda12_9-sm90-avx512/
+# Build a specific variant (CUDA 12.4 — driver 550+)
+flox build onnxruntime-python313-cuda12_4-sm90-avx512
+
+# The output is in result-<variant-name>/
 # Test it
 ./result-onnxruntime-python313-cuda12_9-sm90-avx512/bin/python -c "import onnxruntime; print(onnxruntime.__version__)"
 
@@ -120,10 +130,10 @@ flox build onnxruntime-python313-cuda12_9-sm90-avx512
 ## Naming Convention
 
 ```
-onnxruntime-python313-{cuda12_9|cpu}[-sm{XX}]-{cpuisa}
+onnxruntime-python313-{cuda12_4|cuda12_9|cpu}[-sm{XX}]-{cpuisa}
 ```
 
-The CUDA minor version is encoded in the filename (e.g., `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
+The CUDA minor version is encoded in the filename (e.g., `cuda12_4` for CUDA 12.4, `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
 
 ## Build Architecture
 
