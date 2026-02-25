@@ -1,4 +1,4 @@
-# ONNX Runtime 1.23.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
+# ONNX Runtime 1.23.2 for NVIDIA Hopper (SM90: H100/L40S) + AVX2
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -12,8 +12,8 @@ let
 
   # ── Variant-specific configuration ──────────────────────────────────
   gpuArchCMake = "90";
-  cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm90-avx512";
+  cpuFlags = [ "-mavx2" "-mfma" ];
+  variantName = "onnxruntime-python312-cuda12_4-sm90-avx2";
   # ────────────────────────────────────────────────────────────────────
 
   customOrt = (nixpkgs_pinned.onnxruntime.override {
@@ -33,12 +33,12 @@ let
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.23.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.4]";
+      description = "ONNX Runtime 1.23.2 for NVIDIA H100/L40S (SM90) + AVX2 [CUDA 12.4]";
       platforms = [ "x86_64-linux" ];
     };
   })

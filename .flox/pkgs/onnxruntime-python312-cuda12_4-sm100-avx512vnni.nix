@@ -1,4 +1,4 @@
-# ONNX Runtime 1.23.2 for NVIDIA Ampere DC (SM80: A100/A30) + AVX2
+# ONNX Runtime 1.23.2 for NVIDIA Blackwell DC (SM100: B100/B200) + AVX-512 VNNI
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -11,9 +11,9 @@ let
   inherit (nixpkgs_pinned) lib;
 
   # ── Variant-specific configuration ──────────────────────────────────
-  gpuArchCMake = "80";
-  cpuFlags = [ "-mavx2" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm80-avx2";
+  gpuArchCMake = "100";
+  cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mavx512vnni" "-mfma" ];
+  variantName = "onnxruntime-python312-cuda12_4-sm100-avx512vnni";
   # ────────────────────────────────────────────────────────────────────
 
   customOrt = (nixpkgs_pinned.onnxruntime.override {
@@ -33,12 +33,12 @@ let
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.23.2 for NVIDIA A100/A30 (SM80) + AVX2 [CUDA 12.4]";
+      description = "ONNX Runtime 1.23.2 for NVIDIA B100/B200 (SM100) + AVX-512 VNNI [CUDA 12.4]";
       platforms = [ "x86_64-linux" ];
     };
   })

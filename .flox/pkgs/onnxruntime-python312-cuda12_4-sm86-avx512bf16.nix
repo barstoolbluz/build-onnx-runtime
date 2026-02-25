@@ -13,7 +13,7 @@ let
   # ── Variant-specific configuration ──────────────────────────────────
   gpuArchCMake = "86";
   cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mavx512bf16" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm86-avx512bf16";
+  variantName = "onnxruntime-python312-cuda12_4-sm86-avx512bf16";
   # ────────────────────────────────────────────────────────────────────
 
   customOrt = (nixpkgs_pinned.onnxruntime.override {
@@ -33,7 +33,7 @@ let
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;

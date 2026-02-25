@@ -1,4 +1,4 @@
-# ONNX Runtime 1.23.2 for NVIDIA Ada (SM89: RTX 4090/L4/L40) + AVX-512
+# ONNX Runtime 1.23.2 for NVIDIA Ampere (SM86: RTX 3090/A40) + AVX-512
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -11,9 +11,9 @@ let
   inherit (nixpkgs_pinned) lib;
 
   # ── Variant-specific configuration ──────────────────────────────────
-  gpuArchCMake = "89";
+  gpuArchCMake = "86";
   cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm89-avx512";
+  variantName = "onnxruntime-python312-cuda12_4-sm86-avx512";
   # ────────────────────────────────────────────────────────────────────
 
   customOrt = (nixpkgs_pinned.onnxruntime.override {
@@ -33,12 +33,12 @@ let
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.23.2 for NVIDIA RTX 4090/L4/L40 (SM89) + AVX-512 [CUDA 12.4]";
+      description = "ONNX Runtime 1.23.2 for NVIDIA RTX 3090/A40 (SM86) + AVX-512 [CUDA 12.4]";
       platforms = [ "x86_64-linux" ];
     };
   })
