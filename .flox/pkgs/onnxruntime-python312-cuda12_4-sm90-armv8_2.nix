@@ -1,4 +1,4 @@
-# ONNX Runtime 1.19.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512 VNNI
+# ONNX Runtime 1.19.2 for NVIDIA Hopper (SM90: H100/Grace Hopper) + ARMv8.2 (Graviton2)
 # CUDA 12.4 — Requires NVIDIA driver 550+
 { pkgs ? import <nixpkgs> {} }:
 let
@@ -12,8 +12,8 @@ let
 
   # ── Variant-specific configuration ──────────────────────────────────
   gpuArchCMake = "90";
-  cpuFlags = [ "-mavx512f" "-mavx512dq" "-mavx512vl" "-mavx512bw" "-mavx512vnni" "-mfma" ];
-  variantName = "onnxruntime-python313-cuda12_4-sm90-avx512vnni";
+  cpuFlags = [ "-march=armv8.2-a+fp16+dotprod" ];
+  variantName = "onnxruntime-python312-cuda12_4-sm90-armv8_2";
   # ────────────────────────────────────────────────────────────────────
 
   # ── ORT 1.19.2 source override ─────────────────────────────────────
@@ -143,12 +143,12 @@ EIGENEOF
     '';
   });
 in
-  (nixpkgs_pinned.python3Packages.onnxruntime.override {
+  (nixpkgs_pinned.python312Packages.onnxruntime.override {
     onnxruntime = customOrt;
   }).overrideAttrs (oldAttrs: {
     pname = variantName;
     meta = oldAttrs.meta // {
-      description = "ONNX Runtime 1.19.2 for NVIDIA H100/L40S (SM90) + AVX-512 VNNI [CUDA 12.4]";
-      platforms = [ "x86_64-linux" ];
+      description = "ONNX Runtime 1.19.2 for NVIDIA H100/Grace Hopper (SM90) + ARMv8.2 (Graviton2) [CUDA 12.4]";
+      platforms = [ "aarch64-linux" ];
     };
   })
