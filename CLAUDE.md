@@ -31,13 +31,14 @@ Two-layer override:
 
 ### Package Naming Convention
 ```
-onnxruntime-python313-{cuda12_9|cpu}[-sm{XX}]-{cpuisa}.nix
+onnxruntime-python313-{cuda12_4|cuda12_9|cpu}[-sm{XX}]-{cpuisa}.nix
 ```
 
-The CUDA minor version is encoded in the filename (e.g., `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
+The CUDA minor version is encoded in the filename (e.g., `cuda12_4` for CUDA 12.4, `cuda12_9` for CUDA 12.9) so the exact toolkit version is always visible.
 
 Examples:
 - `onnxruntime-python313-cuda12_9-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.9)
+- `onnxruntime-python313-cuda12_4-sm90-avx512.nix` (H100 + AVX-512, CUDA 12.4)
 - `onnxruntime-python313-cpu-avx2.nix` (CPU-only with AVX2)
 
 ### Key Variables Per Variant
@@ -48,19 +49,20 @@ Examples:
 ### Nixpkgs Pin
 - Revision: `ed142ab1b3a092c4d149245d0c4126a5d7ea00b0`
 - ONNX Runtime: 1.23.2 (CUTLASS 3.9.2 for Blackwell support)
+- CUDA: 12.4 via `cudaPackages_12_4` overlay — **requires NVIDIA driver 550+**
 - CUDA: 12.9 via `cudaPackages_12_9` overlay — **requires NVIDIA driver 560+**
 - Python: 3.13
 
 ### Branch Strategy
 Branches track ORT versions. The CUDA toolkit version is a property of the branch, documented in README.md, CLAUDE.md, and each `.nix` file header comment.
 
-- **main**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (stable)
-- **ort-1.24**: ONNX Runtime 1.24.2 + CUDA 12.9, driver 560+ (current, Blackwell support)
-- **ort-1.23**: ONNX Runtime 1.23.2 + CUDA 12.9, driver 560+ (stable, Blackwell support)
-- **ort-1.22**: ONNX Runtime 1.22.2 + CUDA 12.9, driver 560+ (compat, no Blackwell)
-- **ort-1.20**: ONNX Runtime 1.20.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
-- **ort-1.19**: ONNX Runtime 1.19.2 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
-- **ort-1.18**: ONNX Runtime 1.18.1 + CUDA 12.9, driver 560+ (legacy, no Blackwell)
+- **main**: ONNX Runtime 1.23.2 + CUDA 12.4/12.9, driver 550+/560+ (stable)
+- **ort-1.24**: ONNX Runtime 1.24.2 + CUDA 12.4/12.9, driver 550+/560+ (current, Blackwell support)
+- **ort-1.23**: ONNX Runtime 1.23.2 + CUDA 12.4/12.9, driver 550+/560+ (stable, Blackwell support)
+- **ort-1.22**: ONNX Runtime 1.22.2 + CUDA 12.4/12.9, driver 550+/560+ (compat, no Blackwell)
+- **ort-1.20**: ONNX Runtime 1.20.1 + CUDA 12.4/12.9, driver 550+/560+ (legacy, no Blackwell)
+- **ort-1.19**: ONNX Runtime 1.19.2 + CUDA 12.4/12.9, driver 550+/560+ (legacy, no Blackwell)
+- **ort-1.18**: ONNX Runtime 1.18.1 + CUDA 12.4/12.9, driver 550+/560+ (legacy, no Blackwell)
 
 ### CUDA Version Documentation
 Each GPU `.nix` file includes a two-line header comment:
@@ -68,10 +70,15 @@ Each GPU `.nix` file includes a two-line header comment:
 # ONNX Runtime 1.23.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
 # CUDA 12.9 — Requires NVIDIA driver 560+
 ```
+```nix
+# ONNX Runtime 1.23.2 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512
+# CUDA 12.4 — Requires NVIDIA driver 550+
+```
 
 The `meta.description` also includes the CUDA version:
 ```nix
 description = "ONNX Runtime 1.23.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.9]";
+description = "ONNX Runtime 1.23.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 12.4]";
 ```
 
 ## Package Development Guidelines
@@ -80,7 +87,7 @@ description = "ONNX Runtime 1.23.2 for NVIDIA H100/L40S (SM90) + AVX-512 [CUDA 1
 1. Copy an existing variant `.nix` file with similar configuration
 2. Update `gpuArchCMake`, `cpuFlags`, `variantName`, description, and platform
 3. Ensure the header comment includes the ORT version, CUDA version, and driver requirement
-4. Ensure `variantName` matches the filename (with `cuda12_9` prefix for GPU variants)
+4. Ensure `variantName` matches the filename (with `cuda12_4` or `cuda12_9` prefix for GPU variants)
 5. Test with `flox build <variant-name>`
 
 ### Adding a New CUDA Version
