@@ -1,6 +1,6 @@
 # ONNX Runtime Custom Build Environment
 
-> **You are on the `main` branch** — ONNX Runtime 1.23.2 + CUDA 12.4/12.9 + Driver 550+/560+ (66 variants)
+> **You are on the `ort-1.23` branch** — ONNX Runtime 1.23.2 + CUDA 12.4/12.9 + Driver 550+/560+ (66 variants)
 
 This Flox environment builds custom ONNX Runtime variants with targeted optimizations for specific GPU architectures and CPU instruction sets.
 
