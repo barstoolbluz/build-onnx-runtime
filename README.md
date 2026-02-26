@@ -78,7 +78,7 @@ Standard ONNX Runtime wheels from PyPI compile kernels for all CUDA compute capa
 | SM89 | Ada | RTX 4090, L4, L40 | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | — |
 | SM90 | Hopper | H100, L40S, Grace Hopper | AVX2, AVX-512, AVX-512 BF16, AVX-512 VNNI | ARMv8.2, ARMv9 |
 
-**Note:** Blackwell GPUs (SM100/SM120) require CUTLASS 4.x and are only available on `ort-1.24+`.
+**Note:** Blackwell GPUs (SM100/SM120) are available on `ort-1.23+` branches.
 
 ### CPU-only Variants (6)
 
@@ -118,7 +118,7 @@ flox build onnxruntime-python312-cuda12_4-sm90-avx512  # Python 3.12
 - A100, A30 → `sm80`
 - RTX 3090, A40 → `sm86`
 - T4, RTX 2080 Ti → `sm75`
-- B100, B200 / RTX 5090 → Use `ort-1.24` branch (Blackwell requires CUTLASS 4.x)
+- B100, B200 / RTX 5090 → Use `ort-1.23` branch or newer
 
 **Which CPU ISA do I need?**
 - Most modern x86-64 servers → `avx512`
